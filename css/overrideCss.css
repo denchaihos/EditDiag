@@ -1,0 +1,53 @@
+.panel-body{
+    background-color: #FFFFFF;
+}
+.tab-pane{
+    border: solid 1px #A9A9A9;
+     border-radius: 5px;
+     border-top-left-radius: 0px;
+     margin: -20px;
+     padding: 5px;
+     height: auto;
+}
+ul
+{
+    list-style-type: none;
+
+}
+.btn-primary {
+
+    background: #7a74fb;
+}
+ul#borderRadius>li>a{
+    border-top: solid 1px #245269;
+    border-left: solid 1px #245269;
+    border-right: solid 1px #245269;
+    border-top-right-radius: 5px;
+    border-top-left-radius: 5px;
+    border-color: #245269 5px solid;}
+
+ul#borderRadius>li{
+    margin-right: 8px;
+}
+li.active{
+    font-size: 18px;
+}
+ul#tabs li{
+    font-size: 16px;
+}
+div.container-fluid{
+    padding-left: 10px;
+    padding-right: 10px;
+}
+li.dropdown{
+    font-family: RSU;
+    font-size: 18px;
+    color: #FFFFFF;
+
+}
+/*****************main.css***********************/
+/*.tab-content img{
+  border-radius: 0px;
+}comment to circle  shape  image*/
+
+

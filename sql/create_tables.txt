@@ -1,0 +1,22 @@
+CREATE TABLE `ovstdx_original_dx` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `vn` int(11) NOT NULL,
+  `icd10` varchar(7) CHARACTER SET tis620 COLLATE tis620_bin DEFAULT NULL,
+  `icd10name` varchar(90) NOT NULL,
+  `cnt` tinyint(1) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `vn` (`vn`)
+) ENGINE=InnoDB  DEFAULT CHARSET=tis620;
+
+CREATE TABLE `iptdx_original_dx` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `an` int(8) NOT NULL,
+  `itemno` int(2) NOT NULL,
+  `dct` varchar(5) CHARACTER SET tis620 COLLATE tis620_bin DEFAULT NULL,
+  `icd10` varchar(7) CHARACTER SET tis620 COLLATE tis620_bin DEFAULT NULL,
+  `icd10name` varchar(90) NOT NULL,
+  `spclty` varchar(2) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `an` (`an`),
+  KEY `itemno` (`itemno`)
+) ENGINE=InnoDB AUTO_INCREMENT=38557 DEFAULT CHARSET=tis620;

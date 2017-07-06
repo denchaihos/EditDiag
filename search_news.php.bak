@@ -1,0 +1,31 @@
+<?
+include "connect.php";
+mysql_query("set character_set_results=utf8");
+mysql_query("set character_set_connection=utf8");
+mysql_query("set character_set_client=utf8");
+//$limit = 0;
+$limit = $_GET['limit'];
+$search = $_GET['search'];
+$sql_numrow = "SELECT count(vn) as totalrow  FROM  ovst where hn= '$search' ";
+
+$result_numrow = mysql_query($sql_numrow);
+$numrow = mysql_fetch_array($result_numrow);
+
+$data = array();
+$sql ='select od.id as id_dx,concat(p.fname," ",p.lname) as ptname,o.hn,o.vstdttm,od.icd10,od.cnt,o.vn from ovst o left outer join ovstdx od on od.vn=o.vn
+                left outer join pt p on p.hn=o.hn
+                where hn="'.$search.'" and od.cnt="1" order by o.vstdttm  ';
+$result = mysql_query($sql,$con);
+
+while ($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+    $row_array['id_act'] = $row['id_act'];
+    $row_array['name_act'] = $row['name_act'];
+    $row_array['date_act'] = $row['date_act'];
+    $row_array['name_photo'] = $row['name_photo'];
+    $row_array['total_rows'] = $numrow['totalrow'];
+    array_push($data,$row_array);
+}
+
+echo json_encode($data);
+exit;
+?>

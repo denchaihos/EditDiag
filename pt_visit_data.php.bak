@@ -1,0 +1,43 @@
+<?
+include "connect.php";
+mysql_query("set character_set_results=utf8");
+mysql_query("set character_set_connection=utf8");
+mysql_query("set character_set_client=utf8");
+
+//$totalrow = array();
+$sql_numrow = "SELECT count(vn) as totalrow  FROM  ovst where hn = '$search' ";
+$result_numrow = mysql_query($sql_numrow);
+$numrow = mysql_fetch_array($result_numrow);
+//$row_array['totalrow'] = $numrow['totalrow'];
+//array_push($totalrow,$row_array);
+//echo json_encode($totalrow);
+
+$limit = $_GET['limit'];
+
+//$limit = $limit * 4;
+$data = array();
+$sql ='select od.id as id_dx,concat(p.fname," ",p.lname) as ptname,o.hn,o.vstdttm,od.icd10,od.cnt,o.vn from ovst o left outer join ovstdx od on od.vn=o.vn
+                left outer join pt p on p.hn=o.hn
+                where date( o.vstdttm) ="2014-10-02" and od.cnt="1" order by o.vstdttm limit '.$limit.', 10 ';
+$result = mysql_query($sql,$con);
+$i = 1;
+while ($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+    $row_array['numrecord'] = $i ;
+    $row_array['id_dx'] = $row['id_dx'];
+    $row_array['hn'] = $row['hn'];
+    $row_array['ptname'] = $row['ptname'];
+    $row_array['vstdttm'] = $row['vstdttm'];
+    $row_array['pdx'] = $row['icd10'];
+    $row_array['total_rows'] = $numrow['totalrow'];
+    array_push($data,$row_array);
+    $i++;
+}
+
+//$data['rows'] = $row_array;
+//echo json_encode($data);
+echo json_encode($data);
+exit;
+
+
+
+?>
