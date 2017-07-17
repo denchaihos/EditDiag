@@ -7,7 +7,11 @@
  */
 include 'connect.php';
 if($_POST['visit_type']=="O"){
-    $dx_count = "select count(*) as cc from ovstdx where vn='$_POST[vn]'";
+    if($_POST['cln'] =='40100'){
+        $dx_count = "select count(d.vn) as cc from dt d join dtdx dx on dx.dn=d.cn where d.vn='$_POST[vn]'";
+    }else{
+        $dx_count = "select count(vn) as cc from ovstdx where vn='$_POST[vn]'";
+    }
     $result = mysql_query($dx_count,$con);
     $obj = mysql_fetch_object($result);
     $count_row = $obj->cc;
@@ -23,7 +27,11 @@ if($_POST['visit_type']=="O"){
             if(isset($_POST['icdname_'.$j.''])){
                 $icdname = $_POST['icdname_'.$j.''];
             }
-            $sql =  "INSERT INTO ovstdx (vn,icd10,icd10name,cnt) values ('$_POST[vn]','$icd','$icdname','0') ";
+            if($_POST['cln'] =='40100'){
+
+            }else{
+                $sql =  "INSERT INTO ovstdx (vn,icd10,icd10name,cnt) values ('$_POST[vn]','$icd','$icdname','0') ";
+            }
             mysql_query($sql);
 
         }

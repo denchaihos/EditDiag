@@ -197,16 +197,87 @@ function strbefore($string, $substring) {
         <?php
 
         //$id_dx = $_GET['id_dx'];
-        $id_dx = strbefore($_GET['id_dx'],',');
-        $visit_type = strafter($_GET['id_dx'],',');
+        //$id_dx = strbefore($_GET['id_dx'],',');
+        //$visit_type = strafter($_GET['id_dx'],',');
+        $id_dx = $_GET['id_dx'];
+        $vn = $_GET['id_dx'];
+        $visit_type = $_GET['visit_type'];
+        $cln = $_GET['cln'];
 
-        //$visit_type = $_GET['visit_type'];
-        include 'connect.php';
-        if($visit_type =='O'){
-            $sql ='select o.*,i.icd10name from ovstdx o left outer join icd101 i on i.icd10=o.icd10 where o.vn="'.$id_dx.'" order by o.cnt desc';
-            $result = mysql_query($sql,$con);
-            $count_row = mysql_num_rows($result);
-            ?>
+        if($cln =='40100'){
+            echo 'ยังไมเปิดให้บริการเพิ่ม วินิจฉัยในระบบงานทันตกรรม';
+        }else{
+            include 'connect.php';
+            if($visit_type =='O'){
+                if($cln =='40100'){
+                    $sql ='select d.*,i.nameicdda as icd10name  from dt d JOIN dtdx dx on dx.dn=d.dn left outer join icdda i on i.codeicdda=dx.icdda where d.vn="'.$vn.'" LIMIT 1,5';
+                }else{
+                    $sql ='select o.*,i.icd10name from ovstdx o left outer join icd101 i on i.icd10=o.icd10 where o.vn="'.$vn.'" order by o.cnt desc';
+                }
+                $result = mysql_query($sql,$con);
+                $count_row = mysql_num_rows($result);
+                ?>
+                <div class="baackgroud_me col-lg-12">
+                    รหัสวินิจฉัย
+                    <br/>
+                    <!--<input type="hidden" id="add_dx" value="add_dx" name="add_dx"/>-->
+                    <form name="edit_dx" id="add_dx"  method="post"  onsubmit="return ajaxSubmit(this)">
+                        <input type="hidden" name="id_dx" value="<? echo $id_dx; ?>"/>
+                        <input type="hidden" name="numAdd" id="numAdd" value="0">
+                        <input type="hidden" name="visit_type" value="<? echo $visit_type; ?>"/>
+                        <input type="hidden" name="cln" id="cln_code" value="<? echo $cln; ?>"/>
+                        <div id="dx_box">
+                            <?
+                            if($count_row == 0){ ?>
+                                <input type="hidden" name="vn" value="<? echo $id_dx; ?>"/>
+                            <?
+                            }else{
+                                $i_icd = 1;
+                                while($obj = mysql_fetch_object($result)){
+                                    ?>
+                                    <input type="hidden" name="vn" value="<? echo $vn; ?>"/>
+
+                                    <!--<input type="text" name="id_dx_<? //echo $i_icd; ?>" value="<? //echo $obj->id; ?>"/>-->
+                                    <?php echo $i_icd; ?>
+
+                                    <input type="text"  id="icd10_old"  name="icd10_<? echo $i_icd; ?>" size="5" value="<? echo $obj->icd10; ?>" onkeyup="set_icd10name()" disabled/>
+                                    <input type="text" name="icd10name_<? echo $i_icd; ?>" id="icd10name_old"  size="100" value="<?  echo $obj->icd10name; ?>" disabled/>
+
+                                    <?
+                                   /* if($obj->cnt == 0){*/
+                                        ?>
+                                       <!-- <i class="fa fa-cut fa-lg" id="del_dx"></i>-->
+                                    <?
+
+                                   // }
+                                    ?>
+
+                                    <br/>
+
+                                    <?
+                                    $i_icd++;
+                                }
+                            }
+                            ?>
+                           <!-- <input type="text" name="count_post" value="<? //echo $i_icd ?>"/>-->
+                        </div>
+                        เพิ่มรหัสวินิจฉัย<br/>
+                        <input id="icd10" type="text" autocomplete="off" size="5" onkeyup="set_icd10name()"  />
+                        <input id="icd10name" type="text"  name="" size="100" />
+                        <input type="button" name="ch" value="เพิ่ม" onclick="add_element()"/>
+                        <ul id="data" style="list-style: none;padding-left:0;">   </ul>
+                        <div class="form-group">
+                            <input type="submit" id="submit_save" class="btn btn-success custom" value="บันทึก" name="submit_save" onclick="save_dx()"/>
+                            <input type="submit" id="submit_delete" class="btn btn-primary" value="ลบ DX"  name="submit_delete" onclick="delete_dx()" disabled="<? if($obj->cnt==1) echo 'disabled'; ?>" />
+                            <input type="button" class="btn btn-warning" value="ยกเลิก" onclick="btnCancel()"/>
+                        </div>
+                    </form>
+                </div>
+            <?php }else{
+                $sql ='select ip.id,ip.an,ip.itemno,ip.dct,ip.icd10,ip.spclty,ic.icd10name from ipt i JOIN iptdx  ip on ip.an=i.an left outer join icd101 ic on ic.icd10=ip.icd10 where i.vn="'.$id_dx.'" order by ip.itemno';
+                $result = mysql_query($sql,$con);
+                $count_row = mysql_num_rows($result);
+             ?>
             <div class="baackgroud_me col-lg-12">
                 รหัสวินิจฉัย
                 <br/>
@@ -215,40 +286,41 @@ function strbefore($string, $substring) {
                     <input type="hidden" name="id_dx" value="<? echo $id_dx; ?>"/>
                     <input type="hidden" name="numAdd" id="numAdd" value="0">
                     <input type="hidden" name="visit_type" value="<? echo $visit_type; ?>"/>
+
                     <div id="dx_box">
                         <?
                         if($count_row == 0){ ?>
-                        <input type="hidden" name="vn" value="<? echo $id_dx; ?>"/>
+                            <input type="hidden" name="vn" value="<? echo $id_dx; ?>"/>
                         <?
                         }else{
-                        $i_icd = 1;
-                        while($obj = mysql_fetch_object($result)){
-                            ?>
-                            <input type="hidden" name="vn" value="<? echo $id_dx; ?>"/>
-
-                            <!--<input type="text" name="id_dx_<? //echo $i_icd; ?>" value="<? //echo $obj->id; ?>"/>-->
-                            <?php echo $i_icd; ?>
-
-                            <input type="text"  id="icd10_old"  name="icd10_<? echo $i_icd; ?>" size="5" value="<? echo $obj->icd10; ?>" onkeyup="set_icd10name()" disabled/>
-                            <input type="text" name="icd10name_<? echo $i_icd; ?>" id="icd10name_old"  size="100" value="<?  echo $obj->icd10name; ?>" disabled/>
-
-                            <?
-                           /* if($obj->cnt == 0){*/
+                            $i_icd = 1;
+                            while($obj = mysql_fetch_object($result)){
                                 ?>
-                               <!-- <i class="fa fa-cut fa-lg" id="del_dx"></i>-->
-                            <?
+                                <input type="hidden" name="vn" value="<? echo $id_dx; ?>"/>
 
-                           // }
-                            ?>
+                                <!--<input type="text" name="id_dx_<? //echo $i_icd; ?>" value="<? //echo $obj->id; ?>"/>-->
+                                <?php echo $i_icd; ?>
 
-                            <br/>
+                                <input type="text"  id="icd10_old"  name="icd10_<? echo $i_icd; ?>" size="5" value="<? echo $obj->icd10; ?>" onkeyup="set_icd10name()" disabled/>
+                                <input type="text" name="icd10name_<? echo $i_icd; ?>" id="icd10name_old"  size="100" value="<?  echo $obj->icd10name; ?>" disabled/>
 
-                            <?
-                            $i_icd++;
-                        }
+                                <?
+                                /* if($obj->cnt == 0){*/
+                                ?>
+                                <!-- <i class="fa fa-cut fa-lg" id="del_dx"></i>-->
+                                <?
+
+                                // }
+                                ?>
+
+                                <br/>
+
+                                <?
+                                $i_icd++;
+                            }
                         }
                         ?>
-                       <!-- <input type="text" name="count_post" value="<? //echo $i_icd ?>"/>-->
+                        <!-- <input type="text" name="count_post" value="<? //echo $i_icd ?>"/>-->
                     </div>
                     เพิ่มรหัสวินิจฉัย<br/>
                     <input id="icd10" type="text"  size="5" onkeyup="set_icd10name()"  />
@@ -262,68 +334,8 @@ function strbefore($string, $substring) {
                     </div>
                 </form>
             </div>
-        <?php }else{
-            $sql ='select ip.id,ip.an,ip.itemno,ip.dct,ip.icd10,ip.spclty,ic.icd10name from ipt i JOIN iptdx  ip on ip.an=i.an left outer join icd101 ic on ic.icd10=ip.icd10 where i.vn="'.$id_dx.'" order by ip.itemno';
-            $result = mysql_query($sql,$con);
-            $count_row = mysql_num_rows($result);
-         ?>
-        <div class="baackgroud_me col-lg-12">
-            รหัสวินิจฉัย
-            <br/>
-            <!--<input type="hidden" id="add_dx" value="add_dx" name="add_dx"/>-->
-            <form name="edit_dx" id="add_dx"  method="post"  onsubmit="return ajaxSubmit(this)">
-                <input type="hidden" name="id_dx" value="<? echo $id_dx; ?>"/>
-                <input type="hidden" name="numAdd" id="numAdd" value="0">
-                <input type="hidden" name="visit_type" value="<? echo $visit_type; ?>"/>
-
-                <div id="dx_box">
-                    <?
-                    if($count_row == 0){ ?>
-                        <input type="hidden" name="vn" value="<? echo $id_dx; ?>"/>
-                    <?
-                    }else{
-                        $i_icd = 1;
-                        while($obj = mysql_fetch_object($result)){
-                            ?>
-                            <input type="hidden" name="vn" value="<? echo $id_dx; ?>"/>
-
-                            <!--<input type="text" name="id_dx_<? //echo $i_icd; ?>" value="<? //echo $obj->id; ?>"/>-->
-                            <?php echo $i_icd; ?>
-
-                            <input type="text"  id="icd10_old"  name="icd10_<? echo $i_icd; ?>" size="5" value="<? echo $obj->icd10; ?>" onkeyup="set_icd10name()" disabled/>
-                            <input type="text" name="icd10name_<? echo $i_icd; ?>" id="icd10name_old"  size="100" value="<?  echo $obj->icd10name; ?>" disabled/>
-
-                            <?
-                            /* if($obj->cnt == 0){*/
-                            ?>
-                            <!-- <i class="fa fa-cut fa-lg" id="del_dx"></i>-->
-                            <?
-
-                            // }
-                            ?>
-
-                            <br/>
-
-                            <?
-                            $i_icd++;
-                        }
-                    }
-                    ?>
-                    <!-- <input type="text" name="count_post" value="<? //echo $i_icd ?>"/>-->
-                </div>
-                เพิ่มรหัสวินิจฉัย<br/>
-                <input id="icd10" type="text"  size="5" onkeyup="set_icd10name()"  />
-                <input id="icd10name" type="text"  name="" size="100" />
-                <input type="button" name="ch" value="เพิ่ม" onclick="add_element()"/>
-                <ul id="data" style="list-style: none;padding-left:0;">   </ul>
-                <div class="form-group">
-                    <input type="submit" id="submit_save" class="btn btn-success custom" value="บันทึก" name="submit_save" onclick="save_dx()"/>
-                    <input type="submit" id="submit_delete" class="btn btn-primary" value="ลบ DX"  name="submit_delete" onclick="delete_dx()" disabled="<? if($obj->cnt==1) echo 'disabled'; ?>" />
-                    <input type="button" class="btn btn-warning" value="ยกเลิก" onclick="btnCancel()"/>
-                </div>
-            </form>
-        </div>
-        <?php } ?>
+            <?php }
+        } ?>
 
 
     </div>

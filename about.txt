@@ -1,0 +1,8 @@
+short_open_tage=on
+
+
+chrome
+
+firefox
+
+ie  9  and more

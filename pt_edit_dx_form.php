@@ -80,20 +80,32 @@
 //echo "visit_type".$visit_type;
     $id_dx = $_GET['id_dx'];
     $dx = $_GET['pdx'];
+    $cln = $_GET['cln'];
 //echo $dx;
 //echo $id_dx;
     include 'connect.php';
-if($visit_type=="O"){
-    $sql = 'select cnt as cnt from ovstdx where id="'.$id_dx.'"';
-}else{
-    $sql = 'select itemno as cnt from iptdx where id="'.$id_dx.'"';
-}
-
+if($cln !='40100'){
+    if($visit_type=="O"){
+        $sql = 'select o.cln,dx.cnt as cnt from ovst o join ovstdx dx on dx.vn=o.vn where dx.id="'.$id_dx.'"';
+    }else{
+        $sql = 'select itemno as cnt from iptdx where id="'.$id_dx.'"';
+    }
     $result = mysql_query($sql,$con);
     $obj = mysql_fetch_object($result);
     $cnt = $obj->cnt;
+}
 
-    $sql = 'select icd10name from icd101 where icd10="'.$dx.'"';
+    if($cln =='40100'){
+        $disable_del = 'undefined';
+        $sql = 'select nameicdda as icd10name from icdda where codeicdda="'.$dx.'"';
+    }else{
+        if($cnt=='1'){
+            $disable_del = 'undefined';
+        }else{
+            $disable_del = 'defined';
+        }
+        $sql = 'select icd10name from icd101 where icd10="'.$dx.'"';
+    }
     $result = mysql_query($sql,$con);
     $obj = mysql_fetch_object($result);
 ?>
@@ -102,14 +114,15 @@ if($visit_type=="O"){
     <br/>
     <form name="edit_dx" id="edit_dx"  method="post"  onsubmit="return ajaxSubmit(this)">
         <input type="hidden" name="id_dx" value="<? echo $id_dx; ?>"/>
+        <input type="hidden" name="cln" id="cln_code" value="<? echo $cln; ?>"/>
         <input type="hidden" name="visit_type" value="<? echo $visit_type; ?>"/>
-        <input type="text"  id="icd10"  name="icd10" size="5" value="<? echo $dx; ?>" onkeyup="set_icd10name()"/>
+        <input type="text"  id="icd10"  name="icd10" autocomplete="off" size="5" value="<? echo $dx; ?>" onkeyup="set_icd10name()"/>
         <input type="hidden"  id="icd10_old"  name="icd10_old" size="5" value="<? echo $dx; ?>"/>
         <input type="text" name="icd10name" id="icd10name"  size="100" value="<?  echo $obj->icd10name; ?>"/>
             <p></p>
             <div class="form-group">
                 <input type="submit" id="submit_save" class="btn btn-success custom" value="บันทึก" name="submit_save" onclick="save_dx()"/>
-                <input type="submit" id="submit_delete" class="btn btn-primary" value="ลบ DX"  name="submit_delete" onclick="delete_dx()" <? if($cnt==1) echo 'disabled'; ?> />
+                <input type="submit" id="submit_delete" class="btn btn-primary" value="ลบ DX"  name="submit_delete" onclick="delete_dx()" <? if($disable_del=='undefined') echo 'disabled'; ?> />
                 <input type="button" class="btn btn-warning" value="ยกเลิก" onclick="btnCancel()"/>
             </div>
     </form>

@@ -65,7 +65,7 @@ function btnCancel(){
 ///////////set icd10 name  to  input//////////
 function set_icd10name(){
     //alert('me');
-
+    var cln = $('#cln_code').val();
     var icd10t = $('#icd10').val();
     var icd10 = icd10t.toUpperCase();
     $('#icd10').val(icd10);
@@ -84,10 +84,10 @@ function set_icd10name(){
         document.getElementById('submit_save').disabled = false;
     }
     if(len_icd10>0){
-        //alert(len_icd10);
-        $.getJSON('pt_edit_dx_data.php',{icd10:icd10}, function(data) {
+        //alert(cln);
+        $.getJSON('pt_edit_dx_data.php',{icd10:icd10,cln:cln}, function(data) {
             $.each(data, function(key,value){
-                //alert(value.icd10name);
+
                 $('#icd10name').val(value.icd10name);
             });
         });
@@ -103,6 +103,7 @@ function cancelAjax(){
 };
 $(document).ready(function() {
     var today = new Date();
+
     if(today.getDate() < 10){
         var dd = ('0'+today.getDate());
     }else{
@@ -141,6 +142,7 @@ $(document).ready(function() {
     /////////////////////////////  function  on click submit_date///////////////////////////////////////////////////
     $("input#submit_date").click(function(event){
         $('#hn').val('');
+
 
         var radios_visit_type = document.getElementsByName("visit_type");
         for (var i = 0; i < radios_visit_type.length; i++) {
@@ -192,7 +194,7 @@ $(document).ready(function() {
                 var id_dxx = value.id_dx;
 
 
-                $("tbody#my_news").append("<tr><td style='text-align: center'>"+value.numrecord+"</td>" +
+                $("tbody#my_news").append("<tr ><td style='text-align: center'>"+value.numrecord+"</td>" +
                     "<td>"+value.ptname+"</td>" +
                     "<td>"+value.hn+"</td>" +
                     "<td>"+value.an+"</td>" +
@@ -200,13 +202,13 @@ $(document).ready(function() {
                     "<td id='department'>"+value.department+"</td>" +
                     "<td id='cc'>"+value.cc+"<div id='pi'>PI::"+value.pi+"</div></td>" +
                     "<td id='show_pi'>show</td>" +
-                    "<td class='dx' id='"+id_dxx+"'>"+value.pdx+"</td>" +
-                    "<td class='dx' id='"+value.id1+"'>"+value.dx1+"</td>" +
-                    "<td class='dx' id='"+value.id2+"'>"+value.dx2+"</td>" +
-                    "<td class='dx' id='"+value.id3+"'>"+value.dx3+"</td>" +
-                    "<td class='dx' id='"+value.id4+"'>"+value.dx4+"</td>" +
-                    "<td class='dx' id='"+value.id5+"'>"+value.dx5+"</td>" +
-                    "<td class='dx_new'  id='"+value.vn+"'><i class='fa fa-plus dx'></i></td>" +
+                    "<td class='dx' id='"+id_dxx+"' data-text='"+value.cln+"'>"+value.pdx+"</td>" +
+                    "<td class='dx' id='"+value.id1+"' data-text='"+value.cln+"'>"+value.dx1+"</td>" +
+                    "<td class='dx' id='"+value.id2+"' data-text='"+value.cln+"'>"+value.dx2+"</td>" +
+                    "<td class='dx' id='"+value.id3+"' data-text='"+value.cln+"'>"+value.dx3+"</td>" +
+                    "<td class='dx' id='"+value.id4+"' data-text='"+value.cln+"'>"+value.dx4+"</td>" +
+                    "<td class='dx' id='"+value.id5+"' data-text='"+value.cln+"'>"+value.dx5+"</td>" +
+                    "<td class='dx_new'  id='"+value.vn+"' data-text='"+value.cln+"'><i class='fa fa-plus dx'></i></td>" +
                     "<td class='' id='"+value.hn+","+value.vn+"' onclick='showEMR("+value.hn+");'><i class='fa fa-user dx' style='color: #0089CB'></i></td>" +
                     "</tr>");
                 i++;
@@ -240,7 +242,6 @@ $(document).ready(function() {
             $("td.dx_p,td.dx,td.dx_all,td.history,.dx_new").click(function(event){
                 var id_dx =  this.id;
 
-
                 var class_dx = this.className;
                 //alert(class_dx);
                 //alert(id_dx);
@@ -248,15 +249,17 @@ $(document).ready(function() {
                     var pdx = this.innerText;
                     var this_td = this;
                     var this_tr = this_td.parentNode.rowIndex;
-
+                    var cln = this.getAttribute('data-text');
+                    //alert(id_dx);
                     if(class_dx=='dx'){
 
-                        var link_page = 'pt_edit_dx_form.php?id_dx='+id_dx+'&&pdx='+pdx+'&&visit_type='+visit_type;
+                        var link_page = 'pt_edit_dx_form.php?id_dx='+id_dx+'&&pdx='+pdx+'&&visit_type='+visit_type+'&&cln='+cln;
                         var modal = false;
                     }else if(class_dx=='dx_new'){
-                        var link_page = 'pt_add_dx_form.php?id_dx='+id_dx+'&&visit_type='+visit_type;
+                        var link_page = 'pt_add_dx_form.php?id_dx='+id_dx+'&&visit_type='+visit_type+'&&cln='+cln;
                         var modal = false;
                     }else if(class_dx=='history'){
+                        //var link_page = 'pt_history_form.php?hn='+id_dx;
                         var link_page = 'pt_history_form.php?hn='+id_dx;
                         var modal = true;
                     }else{
@@ -432,14 +435,14 @@ $('.dem2').on('page', function(event, num){
                     "<td id='department'>"+value.department+"</td>" +
                     "<td id='cc'>"+value.cc+"<div id='pi'>PI::"+value.pi+"</div></td>" +
                     "<td id='show_pi'>show</td>" +
-                    "<td class='dx' id='"+value.id_dx+"'>"+value.pdx+"</td>" +
-                    "<td class='dx' id='"+value.id1+"'>"+value.dx1+"</td>" +
-                    "<td class='dx' id='"+value.id2+"'>"+value.dx2+"</td>" +
-                    "<td class='dx' id='"+value.id3+"'>"+value.dx3+"</td>" +
-                    "<td class='dx' id='"+value.id4+"'>"+value.dx4+"</td>" +
-                    "<td class='dx' id='"+value.id5+"'>"+value.dx5+"</td>" +
+                    "<td class='dx' id='"+value.id_dx+"' data-text='"+value.cln+"'>"+value.pdx+"</td>" +
+                    "<td class='dx' id='"+value.id1+"' data-text='"+value.cln+"'>"+value.dx1+"</td>" +
+                    "<td class='dx' id='"+value.id2+"' data-text='"+value.cln+"'>"+value.dx2+"</td>" +
+                    "<td class='dx' id='"+value.id3+"' data-text='"+value.cln+"'>"+value.dx3+"</td>" +
+                    "<td class='dx' id='"+value.id4+"' data-text='"+value.cln+"'>"+value.dx4+"</td>" +
+                    "<td class='dx' id='"+value.id5+"' data-text='"+value.cln+"'>"+value.dx5+"</td>" +
                     //"<td class='dx_all'  id='"+value.vn+"'><i class='fa fa-child'></i></td>" +
-                    "<td class='dx_new'  id='"+value.vn+"'><i class='fa fa-plus dx'></i></td>" +
+                    "<td class='dx_new'  id='"+value.vn+"' data-text='"+value.cln+"'><i class='fa fa-plus dx'></i></td>" +
                     "<td class='' id='"+value.hn+","+value.vn+"' onclick='showEMR("+value.hn+");'><i class='fa fa-user dx' style='color: #0089CB'></i></td>" +
                     "</tr>");
                 i++;
@@ -473,16 +476,18 @@ $('.dem2').on('page', function(event, num){
             $("td.dx_p,td.dx,td.dx_all,td.history,.dx_new").click(function(event){
                 var id_dx =  this.id;
                 var class_dx = this.className;
-                //alert(class_dx);
+               // alert(id_dx);
                 if(id_dx!=''){
                     var pdx = this.innerText;
                     var this_td = this;
                     var this_tr = this_td.parentNode.rowIndex;
+                    var cln = this.getAttribute('data-text');
+
                     if(class_dx=='dx'){
-                        var link_page = 'pt_edit_dx_form.php?id_dx='+id_dx+'&&pdx='+pdx+'&&visit_type='+visit_type;
+                        var link_page = 'pt_edit_dx_form.php?id_dx='+id_dx+'&&pdx='+pdx+'&&visit_type='+visit_type+'&&cln='+cln;
                         var modal = false;
                     }else if(class_dx=='dx_new'){
-                        var link_page = 'pt_add_dx_form.php?id_dx='+id_dx+'&&visit_type='+visit_type;
+                        var link_page = 'pt_add_dx_form.php?id_dx='+id_dx+'&&visit_type='+visit_type+'&&cln='+cln;
                         var modal = false;
                     }else if(class_dx=='history'){
                         var link_page = 'pt_history_form.php?hn='+id_dx;
@@ -638,7 +643,7 @@ function search_by_hn(){
     //alert(hn);
     var radios_visit_type = document.getElementsByName("visit_type");
 
-
+//alert(hn);
 
     if( hn !=''){
         //alert(hn);
@@ -676,12 +681,12 @@ function search_by_hn(){
                     "<td id='department'>"+value.department+"</td>" +
                     "<td id='cc'>"+value.cc+"<div id='pi'>PI::"+value.pi+"</div></td>" +
                     "<td id='show_pi'>show</td>" +
-                    "<td class='dx' id='"+id_dxx+"'>"+value.pdx+"</td>" +
-                    "<td class='dx' id='"+value.id1+"'>"+value.dx1+"</td>" +
-                    "<td class='dx' id='"+value.id2+"'>"+value.dx2+"</td>" +
-                    "<td class='dx' id='"+value.id3+"'>"+value.dx3+"</td>" +
-                    "<td class='dx' id='"+value.id4+"'>"+value.dx4+"</td>" +
-                    "<td class='dx' id='"+value.id5+"'>"+value.dx5+"</td>" +
+                    "<td class='dx' id='"+value.id_dxx+"' data-text='"+value.cln+"'>"+value.pdx+"</td>" +
+                    "<td class='dx' id='"+value.id1+"' data-text='"+value.cln+"'>"+value.dx1+"</td>" +
+                    "<td class='dx' id='"+value.id2+"' data-text='"+value.cln+"'>"+value.dx2+"</td>" +
+                    "<td class='dx' id='"+value.id3+"' data-text='"+value.cln+"'>"+value.dx3+"</td>" +
+                    "<td class='dx' id='"+value.id4+"' data-text='"+value.cln+"'>"+value.dx4+"</td>" +
+                    "<td class='dx' id='"+value.id5+"' data-text='"+value.cln+"'>"+value.dx5+"</td>" +
                     // "<td class='dx_all'  id='"+value.vn+"'><i class='fa fa-child'></i></td>" +
                     "<td class='dx_new'  id='"+value.vn+","+visit_type+"'><i class='fa fa-plus dx'></i></td>" +
                     "<td class='' id='"+value.hn+","+value.vn+"' onclick='showEMR("+value.hn+");'><i class='fa fa-user dx' style='color: #0089CB'></i></td>" +
@@ -725,8 +730,9 @@ function search_by_hn(){
                     var pdx = this.innerText;
                     var this_td = this;
                     var this_tr = this_td.parentNode.rowIndex;
+                    var cln = this.getAttribute('data-text');
                     if(class_dx=='dx'){
-                        var link_page = 'pt_edit_dx_form.php?id_dx='+id_dx+'&&pdx='+pdx+'&&visit_type='+visit_type;
+                        var link_page = 'pt_edit_dx_form.php?id_dx='+id_dx+'&&pdx='+pdx+'&&visit_type='+visit_type+'&&cln='+cln;
                         var modal = false;
                     }else if(class_dx=='dx_new'){
                         var link_page = 'pt_add_dx_form.php?id_dx='+id_dx;

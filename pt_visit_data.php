@@ -14,9 +14,27 @@ $limit = 0;*/
 
     if($visit_type == "O"){
         $sql_numrow = "SELECT count(vn) as totalrow  FROM  ovst where date(vstdttm)='$visit_date' ";
-        $sql ='select if(od.id is null ,"",od.id) as id_dx,concat(p.fname," ",p.lname) as ptname,o.hn,o.an as an,time(o.vstdttm) as vstdttm,c.dspname as department,if(od.icd10 is null,"",od.icd10) as icd10,od.cnt,o.vn
-        from ovst o left outer join ovstdx od on od.vn=o.vn and  cnt = "1" left outer join pt p on p.hn=o.hn LEFT OUTER JOIN cln c on c.cln=o.cln   where date(o.vstdttm) = "'.$visit_date.'"
-        group by o.vn order by o.vstdttm limit '.$limit.', 10 ';
+        $sql ="SELECT o.cln,
+        o.vn,
+  CASE o.cln WHEN '40100' THEN
+            (
+                SELECT dx.id FROM dt d JOIN dtdx dx ON dx.dn=d.dn WHERE d.vn=o.vn LIMIT 1
+            )
+            ELSE IF(od.id IS NULL ,'',od.id)
+            END AS id_dx,concat(p.fname,' ',p.lname) AS ptname,o.hn,o.an AS an,time(o.vstdttm) AS vstdttm,
+            c.dspname AS department,
+            CASE o.cln WHEN '40100' THEN
+            (
+                SELECT dx.icdda FROM dt d JOIN dtdx dx ON dx.dn=d.dn WHERE d.vn=o.vn limit 1
+            )
+            ELSE IF(od.icd10 IS NULL,'',od.icd10)
+            END AS icd10,od.cnt,o.vn
+            FROM ovst o
+            LEFT OUTER JOIN ovstdx od ON od.vn=o.vn AND  cnt = '1'
+            LEFT OUTER JOIN pt p ON p.hn=o.hn
+            LEFT OUTER JOIN cln c ON c.cln=o.cln
+            WHERE date(o.vstdttm)  = '".$visit_date."'
+            group by o.vn order by o.vstdttm limit ".$limit.", 10 ";
     }else{
         $sql_numrow = "SELECT count(an) as totalrow  FROM  ipt where date(dchdate)='$visit_date'   ";
         $sql = 'select idx.id as id_dx,concat(p.fname," ",p.lname) as ptname,i.hn,i.an,time(i.dchdate) as vstdttm,idx.icd10,idx.itemno as cnt,i.vn,w.nameidpm as department
@@ -37,6 +55,7 @@ $limit = 0;*/
     $i = $limit+1;
     while ($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
         $row_array['numrecord'] = $i ;
+        $row_array['cln'] = $row['cln'];
         $row_array['id_dx'] = $row['id_dx'];
         $row_array['vn'] = $row['vn'];
         $row_array['hn'] = $row['hn'];
@@ -45,12 +64,25 @@ $limit = 0;*/
         $row_array['vstdttm'] = $row['vstdttm'];
         $row_array['department'] = $row['department'];
         //  add cc//////
-        $sql_cc = 'select symptom from symptm where vn="'.$row['vn'].'"  ';
-        $result_cc = mysql_query($sql_cc);
-        $row_array['cc'] = "";
-        while($row_cc = mysql_fetch_array($result_cc,MYSQL_ASSOC)){
-            $row_array['cc'] = $row_array['cc'].$row_cc['symptom'];
-        };
+
+        if($row['cln']=='40100'){
+            // cc dental//
+            $sql_cc = 'SELECT s.symptom FROM dt d JOIN symp_d s ON s.dn=d.dn WHERE d.vn="'.$row['vn'].'"  ';
+            $result_cc = mysql_query($sql_cc);
+            $row_array['cc'] = "";
+            while($row_cc = mysql_fetch_array($result_cc,MYSQL_ASSOC)){
+                $row_array['cc'] = $row_array['cc'].$row_cc['symptom'];
+            }
+        }else{
+            // cc opd//
+            $sql_cc = ' select symptom from symptm where vn="'.$row['vn'].'"  ';
+            $result_cc = mysql_query($sql_cc);
+            $row_array['cc'] = "";
+            while($row_cc = mysql_fetch_array($result_cc,MYSQL_ASSOC)){
+                $row_array['cc'] = $row_array['cc'].$row_cc['symptom'];
+            }
+        }
+
         //  add illness history  table sing//////
         $sql_pi = 'select pillness from pillness where vn="'.$row['vn'].'"  ';
         $result_pi = mysql_query($sql_pi);
@@ -63,7 +95,11 @@ $limit = 0;*/
 
         // add other dx///
         if($visit_type == 'O'){
-            $sql_subdx = 'select id,icd10 as subdx from ovstdx where vn="'.$row['vn'].'" and cnt = 0 ';
+            if($row['cln']=='40100'){
+                $sql_subdx = "SELECT dx.id,dx.icdda as subdx from dt d JOIN dtdx dx on dx.dn=d.dn where vn=".$row['vn']."  ORDER BY id limit 1,5 ";
+            }else{
+                $sql_subdx = 'select id,icd10 as subdx from ovstdx where vn="'.$row['vn'].'" and cnt = 0 ';
+            }
         }else{
             $sql_subdx = 'select  idx.id,idx.icd10 as subdx from ipt i join iptdx idx on idx.an=i.an
             where i.an="'.$row['an'].'" and idx.itemno <> 1 ';
